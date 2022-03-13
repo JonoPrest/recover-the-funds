@@ -18,6 +18,8 @@
     "hardhat-deploy": "^0.10.6"
   },
   "dependencies": {
+    "@openzeppelin/contracts": "^4.5.0",
+    "@openzeppelin/contracts-upgradeable": "^4.5.2",
     "dotenv": "^16.0.0"
   }
 }
