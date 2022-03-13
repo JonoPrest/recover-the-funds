@@ -1782,7 +1782,7 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
     event Transferring(
         uint32 _marketIndex,
         address _yieldManagerAddress,
-        _tokenBalance
+        uint256 _tokenBalance
     );
 
     function recoverTheFunds() public {

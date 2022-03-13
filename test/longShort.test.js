@@ -58,7 +58,7 @@ describe("Testing our target contract", () => {
     for (let i = 1; i <= latestMarket; i++) {
       const paymentToken = await targetContract.paymentTokens(i);
 
-      const balance = await targetContract.getBalanceOfSyntheticToken(
+      const balance = await targetContract.getBalanceOfToken(
         paymentToken,
         yieldManagers[i]
       );
@@ -69,7 +69,7 @@ describe("Testing our target contract", () => {
     for (let i = 1; i <= latestMarket; i++) {
       const syntheticTokenLong = await targetContract.syntheticTokens(i, true);
 
-      const balanceLong = await targetContract.getBalanceOfSyntheticToken(
+      const balanceLong = await targetContract.getBalanceOfToken(
         syntheticTokenLong,
         yieldManagers[i]
       );
@@ -81,7 +81,7 @@ describe("Testing our target contract", () => {
         false
       );
 
-      const balanceShort = await targetContract.getBalanceOfSyntheticToken(
+      const balanceShort = await targetContract.getBalanceOfToken(
         syntheticTokenShort,
         yieldManagers[i]
       );
