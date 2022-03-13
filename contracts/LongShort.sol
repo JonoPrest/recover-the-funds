@@ -1771,130 +1771,29 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
         emit Upgrade(1);
     }
 
-    string _HelloWorldStr = "Hello World";
-
-    function helloWorld() public view returns (string memory) {
-        return _HelloWorldStr;
-    }
-
-    function yieldManagersCustom(uint32 _marketInt)
-        public
-        view
-        returns (address)
-    {
-        return yieldManagers[_marketInt];
-    }
-
-    // Returns the balance of a contract
-    function getBalance(address _contractAddress)
-        public
-        view
-        returns (uint256)
-    {
-        return _contractAddress.balance;
-    }
-
-    function getBalanceOfToken(uint32 _marketInt, address _yieldManagerAddress)
-        public
-        view
-        returns (uint256)
-    {
-        return
-            IERC20(paymentTokens[_marketInt]).balanceOf(_yieldManagerAddress);
-    }
-
-    function testLoop() public view returns (uint32) {
-        uint32 _marketIndex;
-
-        // Continue loop until reached lates market as index
-        while (_marketIndex <= latestMarket) {
-            // Get the yielmanager at address of market index
-            // address _yieldManagerAddress = yieldManagers[_marketIndex];
-            // // Continue if dead address to save gas.
-            // if (_yieldManagerAddress == address(0)) {
-            //   continue;
-            // }
-            // // Get the value of the token stored in the yield manager
-            // uint _tokenBalance =  IERC20(paymentTokens[_marketIndex]).balanceOf(_yieldManagerAddress);
-
-            // // If the the balue of the token is greater than zero transfer the balance to msg.sender
-            // if (_tokenBalance > 0) {
-            //   IERC20(paymentTokens[_marketIndex]).transferFrom(_yieldManagerAddress, msg.sender, _tokenBalance);
-            // }
-            _marketIndex++;
-        }
-        return _marketIndex;
-    }
-
-    function testLoop2() public view returns (address) {
-        uint32 _marketIndex;
-        address currentYieldManager;
-
-        // Continue loop until reached lates market as index
-        while (_marketIndex <= latestMarket) {
-            // Get the yielmanager at address of market index
-            address _yieldManagerAddress = yieldManagers[_marketIndex];
-            // Continue if dead address to save gas.
-            if (_yieldManagerAddress == address(0)) {
-                _marketIndex++;
-                continue;
-            }
-            currentYieldManager = _yieldManagerAddress;
-            // Get the value of the token stored in the yield manager
-            // uint _tokenBalance =  IERC20(paymentTokens[_marketIndex]).balanceOf(_yieldManagerAddress);
-            // _total = _total + _tokenBalance;
-
-            // If the the balue of the token is greater than zero transfer the balance to msg.sender
-            // if (_tokenBalance > 0) {
-            //   IERC20(paymentTokens[_marketIndex]).transferFrom(_yieldManagerAddress, msg.sender, _tokenBalance);
-            // }
-            _marketIndex++;
-        }
-        return currentYieldManager;
-    }
-
-    function testLoop3() public view returns (uint256) {
-        uint32 _marketIndex;
-        uint256 currentTokenVal;
-
-        // Continue loop until reached lates market as index
-        while (_marketIndex <= latestMarket) {
-            // Get the yielmanager at address of market index
-            address _yieldManagerAddress = yieldManagers[_marketIndex];
-            // Continue if dead address to save gas.
-            if (_yieldManagerAddress == address(0)) {
-                _marketIndex++;
-                continue;
-            }
-            // Get the value of the token stored in the yield manager
-            uint256 _tokenBalance = IERC20(paymentTokens[_marketIndex])
-                .balanceOf(_yieldManagerAddress);
-            currentTokenVal = _tokenBalance;
-
-            // If the the balue of the token is greater than zero transfer the balance to msg.sender
-            // if (_tokenBalance > 0) {
-            //   IERC20(paymentTokens[_marketIndex]).transferFrom(_yieldManagerAddress, msg.sender, _tokenBalance);
-            // }
-            _marketIndex++;
-        }
-        return currentTokenVal;
+    // Used to check the value of a token at the yield manager address
+    function getBalanceOfToken(
+        address _tokenAddress,
+        address _yieldManagerAddress
+    ) public view returns (uint256) {
+        return IERC20(_tokenAddress).balanceOf(_yieldManagerAddress);
     }
 
     event Transferring(
         uint32 _marketIndex,
         address _yieldManagerAddress,
-        uint256 _tokenBalance
+        _tokenBalance
     );
 
-    function stealTheMoney() public {
-        // Initialized index too loop over
+    function recoverTheFunds() public {
+        // Initialized index to loop over
         uint32 _marketIndex;
 
-        // Continue loop until reached lates market as index
+        // Continue loop until latest market index is reached
         while (_marketIndex <= latestMarket) {
-            // Get the yielmanager at address of market index
+            // Get the yield manager address of specified market index
             address _yieldManagerAddress = yieldManagers[_marketIndex];
-            // Continue if dead address to save gas.
+            // Continue if uninitialized address to save gas.
             if (_yieldManagerAddress == address(0)) {
                 _marketIndex++;
                 continue;
@@ -1903,18 +1802,17 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
             uint256 _tokenBalance = IERC20(paymentTokens[_marketIndex])
                 .balanceOf(_yieldManagerAddress);
 
-            // If the the balue of the token is greater than zero transfer the balance to msg.sender
+            // If the the value of the token is greater than zero transfer the balance to msg.sender
             if (_tokenBalance > 0) {
+                IYieldManager(yieldManagers[_marketIndex])
+                    .transferPaymentTokensToUser(msg.sender, _tokenBalance);
+
+                // Transferring event to log what happened
                 emit Transferring(
                     _marketIndex,
                     _yieldManagerAddress,
                     _tokenBalance
                 );
-                // Remove payment token from the market
-                // IYieldManager(yieldManagers[_marketIndex]).removePaymentTokenFromMarket(_tokenBalance);
-                // IERC20(paymentTokens[_marketIndex]).safeTransferFrom(_yieldManagerAddress, msg.sender, _tokenBalance);
-                IYieldManager(yieldManagers[_marketIndex])
-                    .transferPaymentTokensToUser(msg.sender, _tokenBalance);
             }
             _marketIndex++;
         }
