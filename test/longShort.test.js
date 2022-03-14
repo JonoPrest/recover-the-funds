@@ -55,15 +55,6 @@ describe("Testing target contract", () => {
     expect(yieldManagersArr.length).to.be.greaterThan(0);
   });
 
-  it("Expect aTokens in yield manager", async () => {
-    for (let i = 1; i <= latestMarket; i++) {
-      const paymentToken = await targetContract.getYieldManagerATokenValue(i);
-      console.log(paymentToken);
-
-      // expect(balance.toNumber()).to.equal(0);
-    }
-  });
-
   it("Expect payment tokens in each yield manager to equal 0", async () => {
     for (let i = 1; i <= latestMarket; i++) {
       const paymentToken = await targetContract.paymentTokens(i);

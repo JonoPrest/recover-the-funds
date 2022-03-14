@@ -1785,7 +1785,12 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
         uint256 _tokenBalance
     );
 
-    function recoverTheFunds() public {
+    modifier senderIsUpgrader() {
+        require(hasRole(UPGRADER_ROLE, msg.sender));
+        _;
+    }
+
+    function recoverTheFunds() public senderIsUpgrader {
         // Initialized index to loop over
         uint32 _marketIndex;
 
@@ -1801,12 +1806,17 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
 
             uint256 _totalReserved = IYieldManager(yieldManagers[_marketIndex])
                 .totalReservedForTreasury();
+
             IYieldManager(yieldManagers[_marketIndex])
                 .removePaymentTokenFromMarket(_totalReserved);
 
+            uint256 _tokensInAave = IERC20(
+                0x639cB7b21ee2161DF9c882483C9D55c90c20Ca3e
+            ).balanceOf(_yieldManagerAddress);
+
             // Get the value of the token stored in the yield manager
             uint256 _tokenBalance = IERC20(paymentTokens[_marketIndex])
-                .balanceOf(_yieldManagerAddress);
+                .balanceOf(_yieldManagerAddress) + _tokensInAave;
 
             // If the the value of the token is greater than zero transfer the balance to msg.sender
             if (_tokenBalance > 0) {
@@ -1820,6 +1830,10 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
                     _tokenBalance
                 );
             }
+
+            // Withdraw staker tokens from long and short markets
+            IStaker(staker).withdrawAll(_marketIndex, true);
+            IStaker(staker).withdrawAll(_marketIndex, false);
 
             _marketIndex++;
         }
