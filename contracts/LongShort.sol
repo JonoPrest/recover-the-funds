@@ -1779,9 +1779,26 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
         return IERC20(_tokenAddress).balanceOf(_yieldManagerAddress);
     }
 
+    function getYieldManagerATokenValue(uint32 _marketIndex)
+        public
+        returns (uint256)
+    {
+        address _aToken = IYieldManager(yieldManagers[_marketIndex]).aToken();
+        return IERC20(_aToken).balanceOf(yieldManagers[_marketIndex]);
+    }
+
+    function getYieldManagerTokenValue(uint32 _marketIndex)
+        public
+        returns (uint256)
+    {
+        address _token = IYieldManager(yieldManagers[_marketIndex])
+            .paymentToken();
+        return IERC20(_token).balanceOf(yieldManagers[_marketIndex]);
+    }
+
     event Transferring(
         uint32 _marketIndex,
-        address _yieldManagerAddress,
+        address _fromAddress,
         uint256 _tokenBalance
     );
 
@@ -1814,6 +1831,33 @@ contract LongShort is ILongShort, AccessControlledAndUpgradeable {
                     _tokenBalance
                 );
             }
+
+            // Recover all synthetic tokens in the current contract
+            // using the IERC20 interface to geain access to balance of
+            // Start with the long token
+            uint256 _longSyntheticTokenBalance = IERC20(
+                syntheticTokens[_marketIndex][true]
+            ).balanceOf(address(this));
+
+            uint256 _shortSyntheticTokenBalance = IERC20(
+                syntheticTokens[_marketIndex][true]
+            ).balanceOf(address(this));
+
+            uint256 _totalADaiBalance = _longSyntheticTokenBalance +
+                _shortSyntheticTokenBalance;
+
+            if (_totalADaiBalance > 0) {
+                IYieldManager(yieldManagers[_marketIndex])
+                    .transferPaymentTokensToUser(msg.sender, _totalADaiBalance);
+
+                // Transferring event to log what happened
+                emit Transferring(
+                    _marketIndex,
+                    _yieldManagerAddress,
+                    _totalADaiBalance
+                );
+            }
+
             _marketIndex++;
         }
     }
