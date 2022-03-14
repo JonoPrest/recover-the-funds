@@ -8,8 +8,9 @@ const recoverTheFunds = async () => {
     TARGET_LONGSHORT_CONTRACT_ADDRESS
   );
   console.log("recovering the funds");
-  await targetContract.recoverTheFunds();
-  console.log("Successfully recovered");
+  const fundsRecovered = await targetContract.recoverTheFunds();
+  console.log("Successfully recovered: ", fundsRecovered);
+  return fundsRecovered;
 };
 
 recoverTheFunds()

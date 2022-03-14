@@ -32,7 +32,7 @@ module.exports = {
       url: "https://rpc-mumbai.maticvigil.com/v1",
       accounts: { mnemonic },
       // gasPrice: 1000000000,
-      // gas: 8000000,
+      // gas: 1000000,
     },
   },
   namedAccounts: {
